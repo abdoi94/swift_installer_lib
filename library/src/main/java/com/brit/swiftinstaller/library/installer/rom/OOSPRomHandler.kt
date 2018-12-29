@@ -2,10 +2,11 @@ package com.brit.swiftinstaller.library.installer.rom
 
 import android.content.Context
 import android.content.Intent
-import com.brit.swiftinstaller.library.ui.customize.CategoryMap
-import com.brit.swiftinstaller.library.utils.SynchronizedArrayList
-import com.brit.swiftinstaller.library.utils.runCommand
-import com.brit.swiftinstaller.library.utils.swift
+import android.graphics.drawable.LayerDrawable
+import com.brit.swiftinstaller.library.R
+import com.brit.swiftinstaller.library.ui.customize.*
+import com.brit.swiftinstaller.library.utils.*
+import kotlinx.android.synthetic.main.customize_preview_sysui.view.*
 
 class OOSPRomHandler(context: Context) : PRomHandler(context) {
 
@@ -35,7 +36,6 @@ class OOSPRomHandler(context: Context) : PRomHandler(context) {
                 "com.embermitre.pixolor.app",
                 "com.google.android.apps.genie.geniewidget",
                 "com.google.android.apps.inbox",
-                "com.google.android.apps.messaging",
                 "com.google.android.gm",
                 "com.google.android.talk",
                 "com.mxtech.videoplayer.ad",
@@ -54,6 +54,89 @@ class OOSPRomHandler(context: Context) : PRomHandler(context) {
         )
     }
 
+    override fun getDefaultAccent(): Int {
+        return ColorUtils.convertToColorInt("42a5f5")
+    }
+
+
+    override fun createCustomizeHandler(): CustomizeHandler {
+        return object : CustomizeHandler(context) {
+
+            override fun getDefaultSelection(): CustomizeSelection {
+                val selection = super.getDefaultSelection()
+                selection["notif_background"] = "dark"
+                selection["qs_alpha"] = "0"
+                return selection
+            }
+
+            override fun populateCustomizeOptions(categories: CategoryMap) {
+                populatePieCustomizeOptions(categories)
+                super.populateCustomizeOptions(categories)
+            }
+            override fun createPreviewHandler(context: Context): PreviewHandler {
+                return PiePreviewHandler(context)
+            }
+        }
+    }
+    class PiePreviewHandler(context: Context) : PreviewHandler(context) {
+        override fun updateView(palette: MaterialPalette, selection: CustomizeSelection) {
+            super.updateView(palette, selection)
+            val darkNotif = (selection["notif_background"]) == "dark"
+            systemUiPreview?.let {
+                it.notif_bg_layout.setImageResource(R.drawable.notif_bg_rounded)
+                if (darkNotif) {
+                    it.notif_bg_layout.drawable.setTint(
+                            ColorUtils.handleColor(palette.backgroundColor, 8))
+                } else {
+                    it.notif_bg_layout.drawable.setTint(
+                            context.getColor(R.color.notification_bg_light))
+
+                }
+            }
+        }
+        override fun updateIcons(selection: CustomizeSelection) {
+            super.updateIcons(selection)
+            settingsIcons.forEach { icon ->
+                icon.clearColorFilter()
+                val idName = "ic_${context.resources.getResourceEntryName(icon.id)}_p"
+                val id = context.resources.getIdentifier(
+                        "${context.packageName}:drawable/$idName", null, null)
+                if (id > 0) {
+                    icon.setImageDrawable(context.getDrawable(id))
+                }
+            }
+            systemUiIcons.forEach { icon ->
+                val idName =
+                        "ic_${context.resources.getResourceEntryName(icon.id)}_aosp"
+                val id = context.resources.getIdentifier(
+                        "${context.packageName}:drawable/$idName", null, null)
+                if (id > 0) {
+                    val layerDrawable = context.getDrawable(id) as LayerDrawable
+                    icon.setImageDrawable(layerDrawable)
+                    layerDrawable.findDrawableByLayerId(R.id.icon_bg)
+                            .setTint(selection.accentColor)
+                    layerDrawable.findDrawableByLayerId(
+                            R.id.icon_tint).setTint(selection.backgroundColor)
+                }
+            }
+        }
+
+
+    }
     override fun populatePieCustomizeOptions(categories: CategoryMap) {
+        val notifBackgroundOptions = OptionsMap()
+        notifBackgroundOptions.add(Option(context.getString(R.string.white), "white"))
+        notifBackgroundOptions.add(Option(context.getString(R.string.dark), "dark"))
+        categories.add(CustomizeCategory(context.getString(R.string.notification_tweaks),
+                "notif_background", "white", notifBackgroundOptions, synchronizedArrayListOf("android")))
+
+        val qsOptions = OptionsMap()
+        val trans =
+                SliderOption(context.getString(R.string.qs_transparency), "qs_alpha")
+        trans.current = 0
+        qsOptions.add(trans)
+        categories.add(CustomizeCategory(context.getString(R.string.quick_settings_style),
+                "qs_alpha", "0", qsOptions,
+                synchronizedArrayListOf("android")))
     }
 }

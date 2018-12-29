@@ -74,7 +74,6 @@ open class PRomHandler(context: Context) : RomHandler(context) {
                 "com.embermitre.pixolor.app",
                 "com.google.android.apps.genie.geniewidget",
                 "com.google.android.apps.inbox",
-                "com.google.android.apps.messaging",
                 "com.google.android.gm",
                 "com.google.android.talk",
                 "com.mxtech.videoplayer.ad",
@@ -88,8 +87,13 @@ open class PRomHandler(context: Context) : RomHandler(context) {
                 "com.lastpass.lpandroid",
                 "com.weather.Weather",
                 "com.google.android.settings.intelligence",
-                "com.google.android.inputmethod.latin"
+                "com.google.android.inputmethod.latin",
+                "com.google.intelligence.sense"
         )
+    }
+
+    override fun getDefaultAccent(): Int {
+        return ColorUtils.convertToColorInt("1a73e8")
     }
 
     override fun postInstall(uninstall: Boolean, apps: SynchronizedArrayList<String>,
@@ -169,17 +173,43 @@ open class PRomHandler(context: Context) : RomHandler(context) {
                 val selection = super.getDefaultSelection()
                 selection["stock_pie_icons"] = "default_icons"
                 selection["notif_background"] = "dark"
+                selection["qs_alpha"] = "0"
                 return selection
             }
 
+            override fun populateCustomizeOptions(categories: CategoryMap) {
+                populatePieCustomizeOptions(categories)
+                super.populateCustomizeOptions(categories)
+            }
+
             override fun createPreviewHandler(context: Context): PreviewHandler {
-                return object : PreviewHandler(context) {
+                return PiePreviewHandler(context)
+            }
+        }
+    }
+    class PiePreviewHandler(context: Context) : PreviewHandler(context) {
+        override fun updateView(palette: MaterialPalette, selection: CustomizeSelection) {
+            super.updateView(palette, selection)
+                val darkNotif = (selection["notif_background"]) == "dark"
+                systemUiPreview?.let {
+                    it.notif_bg_layout.setImageResource(R.drawable.notif_bg_rounded)
+                    if (darkNotif) {
+                        it.notif_bg_layout.drawable.setTint(
+                                ColorUtils.handleColor(palette.backgroundColor, 8))
+                    } else {
+                        it.notif_bg_layout.drawable.setTint(
+                                context.getColor(R.color.notification_bg_light))
+
+                    }
+                }
+            }
                     override fun updateIcons(selection: CustomizeSelection) {
+                        super.updateIcons(selection)
                         settingsIcons.forEach { icon ->
                             icon.clearColorFilter()
                             val idName = "ic_${context.resources.getResourceEntryName(icon.id)}_p"
                             val id = context.resources.getIdentifier(
-                                    "com.brit.swiftinstaller:drawable/$idName", null, null)
+                                    "${context.packageName}:drawable/$idName", null, null)
                             if (id > 0) {
                                 val drawable = context.getDrawable(id)?.mutate() as LayerDrawable
                                 if (selection["stock_pie_icons"] == "stock_accented") {
@@ -195,7 +225,7 @@ open class PRomHandler(context: Context) : RomHandler(context) {
                             val idName =
                                     "ic_${context.resources.getResourceEntryName(icon.id)}_aosp"
                             val id = context.resources.getIdentifier(
-                                    "com.brit.swiftinstaller:drawable/$idName", null, null)
+                                    "${context.packageName}:drawable/$idName", null, null)
                             if (id > 0) {
                                 val layerDrawable = context.getDrawable(id) as LayerDrawable
                                 icon.setImageDrawable(layerDrawable)
@@ -207,32 +237,8 @@ open class PRomHandler(context: Context) : RomHandler(context) {
                         }
                     }
 
-                    override fun updateView(palette: MaterialPalette,
-                                            selection: CustomizeSelection) {
-                        super.updateView(palette, selection)
-                        val darkNotif = (selection["notif_background"]) == "dark"
-                        systemUiPreview?.let {
-                            it.notif_bg_layout.setImageResource(R.drawable.notif_bg_rounded)
-                            if (darkNotif) {
-                                it.notif_bg_layout.drawable.setTint(
-                                        ColorUtils.handleColor(palette.backgroundColor, 8))
-                            } else {
-                                it.notif_bg_layout.drawable.setTint(
-                                        context.getColor(R.color.notification_bg_light))
 
-                            }
-                        }
-                    }
                 }
-            }
-
-            override fun populateCustomizeOptions(categories: CategoryMap) {
-                populatePieCustomizeOptions(categories)
-                super.populateCustomizeOptions(categories)
-            }
-
-        }
-    }
 
     open fun populatePieCustomizeOptions(categories: CategoryMap) {
         val pieIconOptions = OptionsMap()
@@ -244,6 +250,22 @@ open class PRomHandler(context: Context) : RomHandler(context) {
                         synchronizedArrayListOf("com.android.settings",
                                 "com.google.android.apps.wellbeing",
                                 "com.google.android.gms",
-                                "com.cyanogenmod.settings.device")))
+                                "com.cyanogenmod.settings.device",
+                                "com.du.settings.doze",
+                                "com.moto.actions")))
+        val notifBackgroundOptions = OptionsMap()
+        notifBackgroundOptions.add(Option(context.getString(R.string.white), "white"))
+        notifBackgroundOptions.add(Option(context.getString(R.string.dark), "dark"))
+        categories.add(CustomizeCategory(context.getString(R.string.notification_tweaks),
+                "notif_background", "white", notifBackgroundOptions, synchronizedArrayListOf("android")))
+
+        val qsOptions = OptionsMap()
+        val trans =
+                SliderOption(context.getString(R.string.qs_transparency), "qs_alpha")
+        trans.current = 0
+        qsOptions.add(trans)
+        categories.add(CustomizeCategory(context.getString(R.string.quick_settings_style),
+                "qs_alpha", "0", qsOptions,
+                synchronizedArrayListOf("android")))
     }
 }

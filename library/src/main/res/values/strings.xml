@@ -126,13 +126,13 @@
     <string name="centered">Centered</string>
     <string name="clock">Clock</string>
     <string name="base_theme_dialog_info">The material theme uses a slightly lighter or darker colors for cards, dialogs, popups etc. to distinguish the background from the themed app background. Flat theme is just flat, and the background color is mostly the same everywhere.</string>
-    <string name="base_theme_dialog_title">Base Theme</string>
+    <string name="base_theme_dialog_title">Base theme</string>
     <string name="default_style">Default</string>
     <string name="android_p_rounded_style">Android P rounded</string>
     <string name="notification_style">Notification style</string>
     <string name="rounded_info">Info!</string>
     <string name="rounded_dialog_info">This option is only tested on stock ROMs. Custom ROMs are not tested and they might cause conflicts with this option. If you want to use this option on a custom ROM, make sure you have adb debugging enabled and the rescue script available.</string>
-    <string name="rounded_dialog_title">Rounded style info</string>
+    <string name="rounded_dialog_title">Rounded style</string>
     <string name="white">White</string>
     <string name="alpha_value">%1$d %%</string>
     <string name="unsupported">Unsupported, please uninstall</string>
@@ -163,8 +163,6 @@
     <string name="requesting_root_access">Requesting root access…</string>
     <string name="search_in_settings">Search in Settings</string>
     <string name="help">Help</string>
-    <string name="installer_version" formatted="false">Swift Installer version: %s (%d)</string>
-    <string name="installer_library_version" formatted="false">Installer library version: %s (%d)</string>
     <string name="installer_source_link">https://github.com/PerLycke/swift_installer_lib</string>
     <string name="settings_title">Settings</string>
     <string name="soft_reboot_title">Use soft reboot</string>

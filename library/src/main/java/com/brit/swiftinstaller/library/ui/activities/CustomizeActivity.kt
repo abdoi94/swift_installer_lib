@@ -227,6 +227,12 @@ class CustomizeActivity : ThemeActivity() {
                 but.isChecked = but == button
             }
         }
+
+        fun setCurrent(key: String) {
+            buttons.forEach { but ->
+                but.isChecked = but.tag == key
+            }
+        }
     }
 
     private fun setupOption(optionsContainer: ViewGroup, option: Option, categoryKey: String,
@@ -264,8 +270,10 @@ class CustomizeActivity : ThemeActivity() {
                 }
                 if (option.subOptions.isNotEmpty()) {
                     optionView.sub_options.setVisible(b)
+                    (optionView.sub_options.tag as RadioGroup?)?.setCurrent(selection[option.subOptionKey])
                 }
             }
+            optionView.option_button.tag = option.value
             group.addRadioButton(optionView.option_button)
             if (selection.containsKey(categoryKey)) {
                 if (selection[categoryKey] == option.value) {
@@ -295,6 +303,7 @@ class CustomizeActivity : ThemeActivity() {
                 optionView.option_info_text.setVisible(option.infoText.isNotEmpty())
                 val subGroup = RadioGroup()
                 option.subOptions.reversed().forEach { subOption ->
+                    optionView.sub_options.tag = subGroup
                     setupOption(optionView.sub_options_container, subOption, option.subOptionKey,
                             subGroup)
                 }

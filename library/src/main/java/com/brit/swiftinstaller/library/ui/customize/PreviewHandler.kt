@@ -23,7 +23,6 @@ package com.brit.swiftinstaller.library.ui.customize
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.graphics.drawable.LayerDrawable
 import android.view.LayoutInflater
 import android.view.View
@@ -128,12 +127,9 @@ abstract class PreviewHandler(val context: Context) {
                 it.preview_sysui_sender.setTextColor(Color.BLACK)
                 it.preview_sysui_msg.setTextColor(Color.parseColor("#8a000000"))
             }
-            if (selection.containsKey("qs_alpha")) {
-                val qsAlpha = selection.getInt("qs_alpha")
-                it.preview_wallpaper.setColorFilter(
-                        ColorUtils.addAlphaColor(palette.backgroundColor,
-                                qsAlpha), PorterDuff.Mode.SRC_OVER)
-            }
+            it.qs_bg_layout.setImageResource(R.drawable.qs_bg)
+            val qsAlpha = selection.getInt("qs_alpha")
+            it.qs_bg_layout.drawable.setTint((ColorUtils.addAlphaColor(palette.backgroundColor, qsAlpha)))
         }
     }
 
@@ -153,16 +149,6 @@ abstract class PreviewHandler(val context: Context) {
             }
             it.searchbar_bg.setColorFilter(palette.cardBackground)
 
-        }
-        systemUiPreview?.let {
-            if (it.preview_sysui_bg.drawable != null) {
-                val systemUiBackground = it.preview_sysui_bg.drawable as LayerDrawable
-                systemUiBackground.findDrawableByLayerId(R.id.preview_background)
-                        .setTint(palette.backgroundColor)
-            }
-            it.preview_wallpaper.setColorFilter(
-                    ColorUtils.addAlphaColor(palette.backgroundColor,
-                            0), PorterDuff.Mode.SRC_OVER)
         }
     }
 }
